@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>টাকা আয় করুন - Ultimate Bot</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://adexora.com/cdn/ads.js?id=1966"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #ff0055;
+            --accent: #7000ff;
+        }
+
+        body { 
+            background: #020617; 
+            color: white; 
+            font-family: 'Hind Siliguri', sans-serif; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 0% 0%, rgba(112, 0, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(255, 0, 85, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(0, 242, 254, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            animation: meshMove 15s ease infinite alternate;
+        }
+
+        @keyframes meshMove {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.2) rotate(5deg); }
+        }
+
+        .neon-box {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .unique-vivid-box {
+            background: linear-gradient(-45deg, #ff0055, #7000ff, #00f2fe, #ff0055);
+            background-size: 400% 400%;
+            animation: gradientFlow 8s ease infinite;
+            border-radius: 20px;
+            transition: transform 0.3s;
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* WHEEL VISUALS */
+        .wheel-outer { position: relative; width: 200px; height: 200px; margin: 20px auto; }
+        #main_wheel {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 8px solid #1e293b;
+            background: conic-gradient(#ff0055 0deg 60deg, #7000ff 60deg 120deg, #00f2fe 120deg 180deg, #ff0055 180deg 240deg, #7000ff 240deg 300deg, #00f2fe 300deg 360deg);
+            transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1);
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
+        }
+        .needle {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent;
+            border-top: 30px solid white; z-index: 10;
+        }
+
+        .page { display: none; }
+        .page-active { display: block !important; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .btn-checkin { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .claimed { background: linear-gradient(to bottom, #38ef7d, #11998e) !important; color: black !important; }
+        .available { border: 2px solid var(--primary); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        nav { background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(20px); border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .active-nav { color: var(--primary); transform: translateY(-3px); }
+        .method-selected { border: 2px solid white !important; scale: 1.05; }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- HOME PAGE -->
+    <div id="home" class="p-5 page page-active">
+        <div class="neon-box p-6 mb-6 text-center">
+            <div class="relative inline-block">
+                <img id="user_img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" class="w-20 h-20 rounded-full mx-auto border-4 border-cyan-400 p-1 mb-3">
+            </div>
+            <h2 id="user_name" class="text-xl font-black text-white">Loading...</h2>
+            <div class="grid grid-cols-2 gap-4 mt-5">
+                <div class="unique-vivid-box p-4">
+                    <p class="text-[10px] font-bold uppercase">ব্যালেন্স</p>
+                    <h3 class="text-lg font-black">৳ <span id="balance">0.00</span></h3>
+                </div>
+                <div class="unique-vivid-box p-4">
+                    <p class="text-[10px] font-bold uppercase">একটিভ দিন</p>
+                    <h3 class="text-lg font-black"><span id="active_days">1</span> দিন</h3>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="text-md font-bold mb-4">🎁 ডেইলি উপহার</h3>
+        <div class="flex gap-3 overflow-x-auto pb-4">
+            <button id="day1" class="btn-checkin min-w-[85px] py-4 flex flex-col items-center rounded-2xl"><span>দিন ১</span><b>৳০.২</b></button>
+            <button id="day2" class="btn-checkin min-w-[85px] py-4 flex flex-col items-center rounded-2xl"><span>দিন ২</span><b>৳০.৩</b></button>
+            <button id="day3" class="btn-checkin min-w-[85px] py-4 flex flex-col items-center rounded-2xl"><span>দিন ৩</span><b>৳০.৪</b></button>
+            <button id="day4" class="btn-checkin min-w-[85px] py-4 flex flex-col items-center rounded-2xl"><span>দিন ৪</span><b>৳০.৫</b></button>
+            <button id="day5" class="btn-checkin min-w-[85px] py-4 flex flex-col items-center rounded-2xl"><span>দিন ৫</span><b>৳০.৬</b></button>
+            <button id="day6" class="btn-checkin min-w-[85px] py-4 flex flex-col items-center rounded-2xl"><span>দিন ৬</span><b>৳০.৭</b></button>
+            <button id="day7" class="btn-checkin min-w-[85px] py-4 flex flex-col items-center rounded-2xl"><span>দিন ৭</span><b>৳১.০</b></button>
+        </div>
+
+        <div class="neon-box p-6 text-center mt-4">
+            <h3 class="text-md font-black mb-1 text-pink-400">🎡 লাকি স্পিন</h3>
+            <div class="wheel-outer">
+                <div class="needle"></div>
+                <div id="main_wheel"></div>
+            </div>
+            <button id="spin_btn" class="unique-vivid-box px-12 py-3 rounded-full font-black text-white mt-2">স্পিন করুন</button>
+        </div>
+
+        <div class="neon-box p-6 mt-6">
+            <h3 class="text-md font-black mb-4">🏆 টপ র‍্যাঙ্কিং</h3>
+            <div id="leaderboard_list" class="space-y-3">
+                <p class="text-xs text-center opacity-50">লোডিং...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TASK PAGE -->
+    <div id="tasks" class="p-5 page">
+        <div class="neon-box p-8 text-center mb-6">
+            <h2 class="text-xl font-black text-cyan-400">৫০০ এ্যাড টাস্ক</h2>
+            <div class="w-full bg-white/5 h-4 rounded-full overflow-hidden my-4 border border-white/10">
+                <div id="ad_progress" class="bg-gradient-to-r from-cyan-500 to-blue-600 h-full transition-all duration-700" style="width: 0%;"></div>
+            </div>
+            <p class="text-xs mb-5 font-bold"><span id="ad_count">0</span> / 500 Ads</p>
+            <button id="main_ad_btn" class="unique-vivid-box w-full py-4 rounded-2xl font-black">START EARNING</button>
+        </div>
+
+        <h3 class="text-md font-bold mb-4">🚀 বোনাস আয় (বক্স)</h3>
+        <div class="space-y-4">
+            <div class="neon-box p-5 flex justify-between items-center">
+                <div><h4 class="font-black">বক্স ১</h4><p class="text-[10px] opacity-60"><span id="b1_cnt">0</span>/5 Ads</p></div>
+                <button id="b1_btn" class="unique-vivid-box px-6 py-2 rounded-xl text-xs font-black">এ্যাড দেখুন</button>
+            </div>
+            <div class="neon-box p-5 flex justify-between items-center">
+                <div><h4 class="font-black">বক্স ২</h4><p class="text-[10px] opacity-60"><span id="b2_cnt">0</span>/5 Ads</p></div>
+                <button id="b2_btn" class="unique-vivid-box px-6 py-2 rounded-xl text-xs font-black">এ্যাড দেখুন</button>
+            </div>
+            <div class="neon-box p-5 flex justify-between items-center">
+                <div><h4 class="font-black">বক্স ৩</h4><p class="text-[10px] opacity-60"><span id="b3_cnt">0</span>/5 Ads</p></div>
+                <button id="b3_btn" class="unique-vivid-box px-6 py-2 rounded-xl text-xs font-black">এ্যাড দেখুন</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WITHDRAW PAGE -->
+    <div id="withdraw" class="p-5 page">
+        <div class="neon-box p-6 mb-6 border-l-8 border-cyan-400">
+            <h2 class="text-xl font-black">টাকা উত্তোলন</h2>
+            <p class="text-[10px] uppercase opacity-70">৯ তারিখ রিকোয়েস্ট ১০ তারিখ পেমেন্ট</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <div id="m_bkash" class="method-card bg-pink-600 p-4 text-center rounded-2xl font-bold">বিকাশ</div>
+            <div id="m_nagad" class="method-card bg-orange-600 p-4 text-center rounded-2xl font-bold">নগদ</div>
+            <div id="m_rocket" class="method-card bg-purple-600 p-4 text-center rounded-2xl font-bold">রকেট</div>
+            <div id="m_recharge" class="method-card bg-cyan-600 p-4 text-center rounded-2xl font-bold">রিচার্জ</div>
+        </div>
+        <div class="neon-box p-6">
+            <input type="number" id="w_num" placeholder="মোবাইল নাম্বার" class="w-full p-4 mb-4 rounded-xl bg-white/5 border border-white/10 text-white outline-none">
+            <input type="number" id="w_amt" placeholder="টাকার পরিমাণ" class="w-full p-4 mb-6 rounded-xl bg-white/5 border border-white/10 text-white outline-none">
+            <button id="withdraw_confirm_btn" class="w-full unique-vivid-box py-4 rounded-2xl font-black">উত্তোলন করুন</button>
+        </div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="profile" class="p-5 page">
+        <div class="neon-box p-8 text-center mb-6">
+            <img id="p_user_img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" class="w-24 h-24 rounded-full mx-auto border-4 border-pink-500 p-1 mb-4">
+            <h2 id="p_user_name" class="font-black text-2xl">User</h2>
+            <p id="p_user_id" class="text-xs text-gray-400 mb-6 bg-white/5 inline-block px-3 py-1 rounded-full">ID: 000000</p>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="unique-vivid-box p-4">
+                    <p class="text-[10px] uppercase">ব্যালেন্স</p>
+                    <h3 class="text-lg font-black">৳ <span id="p_balance">0.00</span></h3>
+                </div>
+                <div class="unique-vivid-box p-4">
+                    <p class="text-[10px] uppercase">রেফার</p>
+                    <h3 class="text-lg font-black"><span id="p_ref">0</span> জন</h3>
+                </div>
+            </div>
+        </div>
+        <a href="https://t.me/YourSupport" class="unique-vivid-box block w-full p-5 text-center font-black mb-6">📢 জয়েন সাপোর্ট গ্রুপ</a>
+        <div class="neon-box p-5">
+            <h4 class="text-xs font-bold mb-3">রেফার লিঙ্ক:</h4>
+            <div class="flex gap-2">
+                <input readonly id="ref_link" class="bg-black/40 p-3 rounded-lg text-[10px] w-full text-cyan-400 border-none">
+                <button id="copy_btn" class="bg-cyan-500 text-black px-5 rounded-lg font-black text-[10px]">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="fixed bottom-0 w-full flex justify-around p-4 z-50">
+        <button id="nav_home" class="nav-item active-nav flex flex-col items-center"><span>🏠</span><span class="text-[10px]">হোম</span></button>
+        <button id="nav_tasks" class="nav-item flex flex-col items-center"><span>🛠</span><span class="text-[10px]">টাকস</span></button>
+        <button id="nav_withdraw" class="nav-item flex flex-col items-center"><span>💰</span><span class="text-[10px]">উত্তোলন</span></button>
+        <button id="nav_profile" class="nav-item flex flex-col items-center"><span>👤</span><span class="text-[10px]">প্রোফাইল</span></button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, update, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNYIOf4viWb4Fr8LsBD7UITQ_TvihUyTU",
+            authDomain: "taka-income-ac393.firebaseapp.com",
+            databaseURL: "https://taka-income-ac393-default-rtdb.firebaseio.com",
+            projectId: "taka-income-ac393",
+            storageBucket: "taka-income-ac393.firebasestorage.app",
+            messagingSenderId: "121449287637",
+            appId: "1:121449287637:web:653a87ac1c56a5396ff75c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const userId = tg.initDataUnsafe.user?.id || "guest_123";
+        const userName = tg.initDataUnsafe.user?.first_name || "ব্যবহারকারী";
+        const userImg = tg.initDataUnsafe.user?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`;
+
+        let userData = { balance: 0.00, mainAds: 0, refs: 0, bonusCounters: { 1: 0, 2: 0, 3: 0 }, lastSpinDate: "", lastCheckinDate: "", claimedDaysCount: 0 };
+
+        async function init() {
+            try {
+                const snap = await get(ref(db, 'users/' + userId));
+                if (snap.exists()) {
+                    userData = { ...userData, ...snap.val() };
+                } else {
+                    await set(ref(db, 'users/' + userId), { ...userData, name: userName });
+                }
+                renderUI();
+                fetchLeaderboard();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderUI() {
+            document.getElementById('user_name').innerText = document.getElementById('p_user_name').innerText = userName;
+            document.getElementById('user_img').src = document.getElementById('p_user_img').src = userImg;
+            document.getElementById('balance').innerText = document.getElementById('p_balance').innerText = userData.balance.toFixed(2);
+            document.getElementById('ad_count').innerText = userData.mainAds;
+            document.getElementById('ad_progress').style.width = Math.min((userData.mainAds / 500 * 100), 100) + "%";
+            document.getElementById('p_ref').innerText = userData.refs || 0;
+            document.getElementById('p_user_id').innerText = "ID: " + userId;
+            document.getElementById('ref_link').value = "https://t.me/YourBotName?start=" + userId;
+            
+            for(let i=1; i<=3; i++) document.getElementById(`b${i}_cnt`).innerText = userData.bonusCounters[i];
+
+            let today = new Date().toDateString();
+            for(let i=1; i<=7; i++) {
+                let btn = document.getElementById('day' + i);
+                btn.classList.remove('claimed', 'available');
+                if(i <= userData.claimedDaysCount) { btn.classList.add('claimed'); btn.querySelector('b').innerText = "✓"; }
+                else if(i === userData.claimedDaysCount + 1 && userData.lastCheckinDate !== today) { btn.classList.add('available'); }
+            }
+        }
+
+        const save = () => { update(ref(db, 'users/' + userId), userData); renderUI(); };
+
+        // --- BUTTON ACTIONS ---
+        
+        // Spin
+        let rotation = 0;
+        document.getElementById('spin_btn').onclick = () => {
+            let today = new Date().toDateString();
+            if(userData.lastSpinDate === today) return tg.showAlert("আগামীকাল আবার চেষ্টা করুন!");
+            rotation += 1800 + Math.random() * 360;
+            document.getElementById('main_wheel').style.transform = `rotate(${rotation}deg)`;
+            document.getElementById('spin_btn').disabled = true;
+            setTimeout(() => {
+                let win = parseFloat((Math.random() * 0.5 + 0.1).toFixed(2));
+                userData.balance += win; userData.lastSpinDate = today; save();
+                tg.showAlert(`অভিনন্দন! আপনি জিতেছেন ৳${win}`);
+                document.getElementById('spin_btn').disabled = false;
+            }, 4000);
+        };
+
+        // Ads
+        const showAd = (cb) => {
+            if(window.showAdexora) window.showAdexora().then(cb).catch(() => tg.showAlert("এ্যাড পাওয়া যায়নি"));
+            else tg.showAlert("এ্যাড লোড হচ্ছে, একটু পর চেষ্টা করুন");
+        };
+
+        document.getElementById('main_ad_btn').onclick = () => {
+            if(userData.mainAds >= 500) return tg.showAlert("আজকের লিমিট শেষ!");
+            showAd(() => { userData.mainAds++; userData.balance += 0.05; save(); });
+        };
+
+        [1,2,3].forEach(i => {
+            document.getElementById(`b${i}_btn`).onclick = () => {
+                if(userData.bonusCounters[i] < 5) {
+                    showAd(() => { userData.bonusCounters[i]++; save(); });
+                } else {
+                    userData.balance += 0.25; userData.bonusCounters[i] = 0; save();
+                    tg.showAlert("বোনাস ব্যালেন্সে যোগ হয়েছে!");
+                }
+            };
+        });
+
+        // Navigation
+        const pages = ['home', 'tasks', 'withdraw', 'profile'];
+        pages.forEach(p => {
+            document.getElementById('nav_' + p).onclick = () => {
+                pages.forEach(pg => {
+                    document.getElementById(pg).classList.remove('page-active');
+                    document.getElementById('nav_' + pg).classList.remove('active-nav');
+                });
+                document.getElementById(p).classList.add('page-active');
+                document.getElementById('nav_' + p).classList.add('active-nav');
+            };
+        });
+
+        // Daily Checkin
+        for(let i=1; i<=7; i++) {
+            document.getElementById('day'+i).onclick = () => {
+                let today = new Date().toDateString();
+                if(userData.lastCheckinDate === today) return tg.showAlert("আজকের বোনাস নেওয়া শেষ!");
+                if(i !== userData.claimedDaysCount + 1) return tg.showAlert("আগের দিনের বোনাস আগে নিন!");
+                let rew = [0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0];
+                userData.balance += rew[i];
+                userData.lastCheckinDate = today;
+                userData.claimedDaysCount = i === 7 ? 0 : i;
+                save();
+            };
+        }
+
+        // Withdraw Method Select
+        let method = "";
+        ['bkash','nagad','rocket','recharge'].forEach(m => {
+            document.getElementById('m_'+m).onclick = () => {
+                method = m;
+                document.querySelectorAll('.method-card').forEach(el => el.classList.remove('method-selected'));
+                document.getElementById('m_'+m).classList.add('method-selected');
+            };
+        });
+
+        document.getElementById('withdraw_confirm_btn').onclick = () => {
+            let num = document.getElementById('w_num').value;
+            let amt = parseFloat(document.getElementById('w_amt').value);
+            let min = method === 'recharge' ? 200 : 3000;
+            if(!method) return tg.showAlert("মেথড সিলেক্ট করুন");
+            if(amt < min || isNaN(amt)) return tg.showAlert(`সর্বনিম্ন ৳${min}`);
+            if(userData.balance < amt) return tg.showAlert("ব্যালেন্স নেই");
+            userData.balance -= amt; save();
+            set(ref(db, 'requests/' + Date.now()), { userId, num, amt, method, status: "Pending" });
+            tg.showAlert("রিকোয়েস্ট সফল হয়েছে!");
+        };
+
+        document.getElementById('copy_btn').onclick = () => {
+            navigator.clipboard.writeText(document.getElementById('ref_link').value);
+            tg.showAlert("কপি হয়েছে!");
+        };
+
+        async function fetchLeaderboard() {
+            const q = query(ref(db, 'users'), orderByChild('balance'), limitToLast(10));
+            const s = await get(q);
+            if(s.exists()) {
+                let list = []; s.forEach(c => list.push(c.val()));
+                document.getElementById('leaderboard_list').innerHTML = list.reverse().map((u, i) => `
+                    <div class="flex justify-between bg-white/5 p-3 rounded-xl border border-white/5">
+                        <span class="text-xs font-bold">#${i+1} ${u.name || 'User'}</span>
+                        <span class="text-xs font-black text-cyan-400">৳${(u.balance || 0).toFixed(2)}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
