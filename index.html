@@ -76,6 +76,7 @@
             box-shadow: 0 4px 15px rgba(255, 0, 85, 0.3);
         }
         .vivid-btn:active { transform: scale(0.95); }
+        .vivid-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* স্পিন হুইল */
         #main_wheel { 
@@ -106,7 +107,7 @@
         .method-selected { border-color: #00f2fe !important; background: rgba(0, 242, 254, 0.2) !important; transform: scale(1.05); }
     </style>
 </head>
-<body>
+<body onload="startApp()">
 
     <!-- HOME PAGE -->
     <div id="home" class="p-5 page page-active">
@@ -186,7 +187,7 @@
                     <h4 class="font-bold text-lg">ডাইরেক্ট লিঙ্ক</h4>
                     <p class="text-xs text-yellow-500">রিওয়ার্ড: ৳১.২৫</p>
                 </div>
-                <button onclick="startDirectLink()" class="vivid-btn px-8 py-3 text-xs z-10">শুরু করুন</button>
+                <button id="dl_btn" onclick="startDirectLink()" class="vivid-btn px-8 py-3 text-xs z-10">শুরু করুন</button>
             </div>
             <div id="timer_box" class="hidden text-center p-4 neon-box bg-cyan-500/10 border-cyan-500/30">
                 <div class="z-10 relative">
@@ -204,7 +205,7 @@
                 <p class="text-xs opacity-60 mt-2 uppercase">টপ ১০ জন আয়কারী</p>
             </div>
         </div>
-        <div id="rank_list" class="space-y-1">
+        <div id="rank_list" class="space-y-2">
             <p class="text-center opacity-50">লোডিং...</p>
         </div>
     </div>
@@ -303,15 +304,16 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const tg = window.Telegram.WebApp;
+        tg.expand();
 
-        const userId = tg.initDataUnsafe.user?.id || "user_" + Math.floor(Math.random()*1000);
+        const userId = tg.initDataUnsafe.user?.id || "user_" + Math.floor(Math.random()*1000000);
         const userName = tg.initDataUnsafe.user?.first_name || "User";
         const userImg = tg.initDataUnsafe.user?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`;
         const refBy = tg.initDataUnsafe.start_param;
 
         let userData = { balance: 0.0, mainAds: 0, refs: 0, lastClaimDate: "", b1: 0, b2: 0, selectedMethod: "", lastResetTime: 0 };
 
-        async function startApp() {
+        window.startApp = async () => {
             const snap = await get(ref(db, 'users/' + userId));
             if (snap.exists()) {
                 userData = { ...userData, ...snap.val() };
@@ -330,7 +332,6 @@
             loadLeaderboard();
         }
 
-        // ১২ ঘণ্টা পর রিসেট লজিক
         function checkTaskReset() {
             const now = Date.now();
             const twelveHours = 12 * 60 * 60 * 1000;
@@ -353,7 +354,12 @@
             document.getElementById('b1_cnt').innerText = userData.b1 || 0;
             document.getElementById('b2_cnt').innerText = userData.b2 || 0;
             document.getElementById('user_id_home').innerText = document.getElementById('p_user_id').innerText = "ID: " + userId;
-            document.getElementById('ref_link').value = "https://t.me/YOUR_BOT_USERNAME?start=" + userId;
+            document.getElementById('ref_link').value = "https://t.me/Takaaikorun_bot?start=" + userId;
+            
+            const today = new Date().toDateString();
+            if(userData.lastClaimDate === today) {
+                document.querySelectorAll('[id^="day"]').forEach(btn => btn.style.opacity = "0.4");
+            }
         }
 
         window.showPage = (id) => {
@@ -371,11 +377,4 @@
             await update(ref(db, 'users/' + userId), userData);
             renderUI();
             alert(`দিন ${day} বোনাস ৳${amt} যোগ হয়েছে!`);
-        };
-
-        window.showAd = (type) => {
-            if (typeof show_10689291 === 'function') {
-                show_10689291().then(async () => {
-                    if (type === 'b1') {
-                        if (userData.b1 >= 5) return alert("১২ ঘণ্টা পর আবার পাবেন!");
-                        userData.b1++; user
+   
